@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Weather Globe</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+  <script src="vendor/topojson-client.min.js"></script>
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three.module.js" } }
+  </script>
+</head>
+<body>
+  <canvas id="globe"></canvas>
+
+  <header class="panel brand">
+    <div class="title">Weather Globe</div>
+    <div class="run" id="runInfo">Loading forecast…</div>
+    <div class="status" id="statusLine"></div>
+    <div class="credit">Data: NOAA GFS · ECMWF Open Data (CC BY 4.0) · NCEP/NCAR R1 normals</div>
+  </header>
+
+  <aside class="panel layers" id="layerPanel">
+    <div class="kicker model-kicker">Forecast model</div>
+    <div class="seg model-seg" id="modelToggle">
+      <button data-model="gfs" class="on" title="NOAA GFS, 16 days">GFS</button><button data-model="ecmwf" title="ECMWF IFS, 10 days">ECMWF</button><button data-model="diff" title="Where the two models disagree">Diff</button>
+    </div>
+    <div class="layer-groups" id="layerList"></div>
+    <div class="options">
+      <label class="row"><input type="checkbox" id="optParticles" checked> Wind flow</label>
+      <label class="row"><input type="checkbox" id="optContours" checked> Contours</label>
+      <label class="row"><input type="checkbox" id="optBorders" checked> Borders</label>
+      <label class="row"><input type="checkbox" id="optDaylight"> Day / night</label>
+      <label class="row"><input type="checkbox" id="optGraticule"> Grid</label>
+      <label class="row slider">Opacity <input type="range" id="optOpacity" min="0" max="1" step="0.01" value="0.85"></label>
+      <div class="row seg" id="unitToggle">
+        <button data-units="metric" class="on">Metric</button><button data-units="imperial">Imperial</button>
+      </div>
+    </div>
+  </aside>
+
+  <aside class="panel vortex" id="vortexPanel">
+    <div class="vortex-head">
+      <div>
+        <div class="kicker">Stratospheric polar vortex · 10 hPa</div>
+        <div class="vortex-state" id="vortexState">—</div>
+      </div>
+      <div class="seg small" id="hemiToggle">
+        <button data-hemi="nh" class="on">N</button><button data-hemi="sh">S</button>
+      </div>
+    </div>
+    <svg id="vortexChart" class="chart" viewBox="0 0 300 120" preserveAspectRatio="none"></svg>
+    <div class="chart-legend">
+      <span><i style="background:#6cc4ff"></i>GFS</span>
+      <span><i style="background:#f6ad57"></i>ECMWF</span>
+      <span id="climLegend"><i class="band"></i>1991–2020 normal (10–90%)</span>
+    </div>
+    <div class="chart-caption">Zonal-mean wind at 60° (m/s). Below 0 = winds reversed (major sudden stratospheric warming).</div>
+    <dl class="stats" id="vortexStats"></dl>
+    <div class="vortex-actions">
+      <button id="btnPole">View pole</button>
+      <button id="btnVortexLayer">Show vortex layer</button>
+    </div>
+  </aside>
+
+  <section class="panel point hidden" id="pointPanel">
+    <button class="close" id="pointClose" aria-label="Close">×</button>
+    <div class="kicker" id="pointTitle">Point forecast</div>
+    <div class="point-now" id="pointNow"></div>
+    <svg id="pointChart" class="chart tall" viewBox="0 0 340 170" preserveAspectRatio="none"></svg>
+    <div class="chart-caption" id="pointCaption"></div>
+  </section>
+
+  <footer class="panel timeline">
+    <button id="btnPlay" class="play" aria-label="Play">▶</button>
+    <div class="time-main">
+      <div class="time-label"><span id="validLocal">—</span><span id="validUtc" class="muted"></span><span id="leadTime" class="lead"></span></div>
+      <div class="slider-wrap">
+        <input type="range" id="timeSlider" min="0" max="0" step="1" value="0">
+        <div class="ticks" id="dayTicks"></div>
+      </div>
+    </div>
+  </footer>
+
+  <div class="panel legend" id="legend">
+    <div class="legend-title" id="legendTitle"></div>
+    <canvas id="legendBar" width="300" height="12"></canvas>
+    <div class="legend-ticks" id="legendTicks"></div>
+    <div class="readout" id="readout">Hover the globe for values · click for a 16-day forecast</div>
+  </div>
+
+  <div class="toast hidden" id="toast"></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
