@@ -179,6 +179,7 @@ async function update() {
 
   globe.setSun(new Date(valid));
   updateTimeLabel();
+  updateEcLimit();
   renderVortex();
   updateMarker();
   drawLegend();
@@ -201,7 +202,7 @@ function unavailableText(idx, ecIdx) {
   if (state.model !== 'gfs' && !ecStore.manifest) return 'ECMWF data is still downloading…';
   if (state.model !== 'gfs' && ecIdx < 0) {
     const last = ecStore.manifest.steps.at(-1);
-    return `ECMWF runs out to 10 days (${new Date(last.valid).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}). Switch to GFS for later days.`;
+    return `ECMWF runs out to ${Math.round(last.fh / 24)} days (${new Date(last.valid).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}). Switch to GFS for later days.`;
   }
   return `${L.label} is not available at this step (analysis time).`;
 }
@@ -225,6 +226,17 @@ function setupTimeline() {
       ticks.append(sp);
     }
   });
+}
+
+/** Hatch the end of the timeline that ECMWF doesn't cover (ECMWF and Diff modes only). */
+function updateEcLimit() {
+  const box = $('ecLimit');
+  const n = store.manifest?.steps.length ?? 0;
+  let last = -1;
+  for (let i = 0; i < n; i++) if (ecIndex(i) >= 0) last = i;
+  const show = state.model !== 'gfs' && ecStore.manifest && last >= 0 && last < n - 1;
+  box.classList.toggle('hidden', !show);
+  if (show) box.style.left = `${((last + 0.5) / (n - 1)) * 100}%`;
 }
 
 function updateTimeLabel() {

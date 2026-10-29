@@ -118,16 +118,23 @@ def fetch(url: str, headers=None, retries=4) -> bytes:
     raise RuntimeError(f"failed to fetch {url}")
 
 
+# ecCodes' definition parser is not thread-safe: concurrent first-time decodes can
+# abort the whole process ("fatal flex scanner internal error"). Downloads stay
+# parallel; only the (fast) decode is serialised.
+_eccodes_lock = threading.Lock()
+
+
 def decode_grib(buf: bytes) -> np.ndarray:
-    gid = eccodes.codes_new_from_message(buf)
-    try:
-        ni = eccodes.codes_get(gid, "Ni")
-        nj = eccodes.codes_get(gid, "Nj")
-        vals = eccodes.codes_get_values(gid).reshape(nj, ni)
-        if eccodes.codes_get(gid, "jScansPositively"):
-            vals = vals[::-1]
-    finally:
-        eccodes.codes_release(gid)
+    with _eccodes_lock:
+        gid = eccodes.codes_new_from_message(buf)
+        try:
+            ni = eccodes.codes_get(gid, "Ni")
+            nj = eccodes.codes_get(gid, "Nj")
+            vals = eccodes.codes_get_values(gid).reshape(nj, ni)
+            if eccodes.codes_get(gid, "jScansPositively"):
+                vals = vals[::-1]
+        finally:
+            eccodes.codes_release(gid)
     assert vals.shape == (NY, NX), vals.shape
     return vals
 

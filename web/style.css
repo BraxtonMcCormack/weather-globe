@@ -123,6 +123,17 @@ input[type=checkbox] { accent-color: var(--accent); margin: 0 8px 0 0; }
 .time-label .lead { margin-left: auto; font-family: var(--mono); color: var(--accent); }
 .slider-wrap { position: relative; margin-top: 4px; }
 #timeSlider { width: 100%; margin: 0; }
+/* Part of the GFS timeline that ECMWF does not reach. */
+.ec-limit {
+  position: absolute; top: -2px; right: 0; height: 22px; pointer-events: none;
+  border-left: 1px dashed rgba(255, 181, 71, 0.8); border-radius: 0 6px 6px 0;
+  background: repeating-linear-gradient(135deg, rgba(255, 181, 71, 0.16) 0 4px, transparent 4px 8px);
+}
+.ec-limit span {
+  position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+  font-size: 10px; line-height: 14px; padding: 0 5px; border-radius: 7px;
+  color: var(--warn); background: rgba(12, 18, 30, 0.85); white-space: nowrap;
+}
 .ticks { position: relative; height: 14px; font-size: 10px; color: var(--muted); }
 .ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
 .ticks span.uncertain { color: var(--warn); }

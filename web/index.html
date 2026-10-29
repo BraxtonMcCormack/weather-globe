@@ -24,7 +24,7 @@
   <aside class="panel layers" id="layerPanel">
     <div class="kicker model-kicker">Forecast model</div>
     <div class="seg model-seg" id="modelToggle">
-      <button data-model="gfs" class="on" title="NOAA GFS, 16 days">GFS</button><button data-model="ecmwf" title="ECMWF IFS, 10 days">ECMWF</button><button data-model="diff" title="Where the two models disagree">Diff</button>
+      <button data-model="gfs" class="on" title="NOAA GFS, 16 days">GFS</button><button data-model="ecmwf" title="ECMWF IFS, 15 days">ECMWF</button><button data-model="diff" title="Where the two models disagree">Diff</button>
     </div>
     <div class="layer-groups" id="layerList"></div>
     <div class="options">
@@ -78,6 +78,7 @@
       <div class="time-label"><span id="validLocal">—</span><span id="validUtc" class="muted"></span><span id="leadTime" class="lead"></span></div>
       <div class="slider-wrap">
         <input type="range" id="timeSlider" min="0" max="0" step="1" value="0">
+        <div class="ec-limit hidden" id="ecLimit"><span>GFS only</span></div>
         <div class="ticks" id="dayTicks"></div>
       </div>
     </div>

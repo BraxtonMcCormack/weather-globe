@@ -1,7 +1,7 @@
 """Download ECMWF IFS 0.25 degree open-data forecasts (CC-BY-4.0) into the same
 on-disk format as GFS, so the browser can show either model or their difference.
 
-Only the 00Z and 12Z cycles run out to 10 days (240 h), so those are used.
+Only the 00Z and 12Z cycles run out to 15 days (360 h), so those are used.
 """
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ HOSTS = [
 DATA_DIR = gfs.DATA_DIR / "ecmwf"
 RUNS_DIR = DATA_DIR / "runs"
 KEEP_RUNS = 2
-FORECAST_HOURS = list(range(0, 241, 6))
+FORECAST_HOURS = list(range(0, 361, 6))  # 15 days
 MODEL_NAME = "ECMWF IFS 0.25°"
 
 # Our field name -> (param, levtype, level). Units match the GFS fields except where converted below.
@@ -151,11 +151,18 @@ def download_run(cycle: dt.datetime, workers: int = 6) -> str:
     rid = gfs.run_id(cycle)
     out_dir = RUNS_DIR / rid
     out_dir.mkdir(parents=True, exist_ok=True)
+    # Resume: keep steps an earlier (possibly shorter) download already finished.
     steps: dict[int, dict] = {}
-    set_status(state="downloading", run=rid, done=0, total=len(FORECAST_HOURS),
+    manifest = out_dir / "manifest.json"
+    if manifest.exists():
+        for s in json.loads(manifest.read_text())["steps"]:
+            if s["fh"] in FORECAST_HOURS and s["fields"]:
+                steps[s["fh"]] = {f: True for f in s["fields"]}
+    todo = [fh for fh in FORECAST_HOURS if fh not in steps]
+    set_status(state="downloading", run=rid, done=len(steps), total=len(FORECAST_HOURS),
                message=f"Downloading ECMWF {rid}")
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        futures = {pool.submit(process_step, cycle, fh, out_dir): fh for fh in FORECAST_HOURS}
+        futures = {pool.submit(process_step, cycle, fh, out_dir): fh for fh in todo}
         for fut in as_completed(futures):
             steps[futures[fut]] = fut.result()
             set_status(done=len(steps))
@@ -176,7 +183,9 @@ def update_if_needed() -> str | None:
         set_status(state="idle", message="Could not reach ECMWF; will retry")
         return None
     rid = gfs.run_id(cycle)
-    if (RUNS_DIR / rid / "vortex.json").exists():
+    manifest = RUNS_DIR / rid / "manifest.json"
+    have = json.loads(manifest.read_text())["steps"] if manifest.exists() else []
+    if (RUNS_DIR / rid / "vortex.json").exists() and have and have[-1]["fh"] >= FORECAST_HOURS[-1]:
         if local_latest() != rid:
             set_latest(rid)
         set_status(state="idle", run=rid, message=f"Up to date: ECMWF {rid}")

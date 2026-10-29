@@ -21,7 +21,7 @@ kept.
 | Model | Runs used | Range | Download | Source |
 |---|---|---|---|---|
 | NOAA GFS 0.25° | 00/06/12/18Z | 16 days, 6-hourly | ~40 s, ~700 MB | NOAA Open Data on AWS (`noaa-gfs-bdp-pds`) |
-| ECMWF IFS 0.25° | 00/12Z | 10 days, 6-hourly | ~45 s, ~450 MB | ECMWF Open Data (CC-BY-4.0), AWS mirror |
+| ECMWF IFS 0.25° | 00/12Z | 15 days, 6-hourly | ~70 s, ~670 MB | ECMWF Open Data (CC-BY-4.0), AWS mirror |
 
 Both models are fetched with byte-range requests, so only the needed fields are pulled.
 
@@ -30,7 +30,8 @@ Both models are fetched with byte-range requests, so only the needed fields are 
 Use the **GFS / ECMWF / Diff** switch at the top of the layer panel.
 
 - **ECMWF** shows the same layers from ECMWF's IFS model, matched to the GFS timeline by
-  valid time. Past day 10 it shows a notice instead, because ECMWF's open data stops there.
+  valid time. ECMWF's open data stops at day 15, which is about a day short of GFS. That
+  last part of the timeline is hatched, and a notice appears there instead of the overlay.
 - **Diff** shows GFS minus ECMWF. Red means GFS is higher, blue means ECMWF is higher, and
   clear means the two agree. Where they disagree, the forecast is less certain. Hovering
   shows both values and the difference.
